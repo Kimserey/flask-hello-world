@@ -1,15 +1,16 @@
-from flask import Flask
-from datetime import datetime
 import re
+from datetime import datetime
 
-app = Flask(__name__)
+from flask import Flask
+
+from . import app
 
 @app.route("/")
 def home():
   return "Hello, Flask!"
 
 @app.route("/hello/<name>")
-def hello_there(name):
+def hello(name):
     now = datetime.now()
     formatted_now = now.strftime("%A, %d %B, %Y at %X")
 
