@@ -1,19 +1,19 @@
+from flask import Flask, jsonify, request, g
+from marshmallow import Schema, ValidationError, fields, post_load
+
 from . import app
-from flask import Flask, jsonify,request
-from marshmallow import Schema, fields, ValidationError, post_load
-
-class Todo:
-    def __init__(self, name, task):
-        self.name = name
-        self.task = task
-
-todos = {}
+from . import storage
 
 ### SCHEMAS ###
 
 def must_not_be_blank(data):
     if not data:
         raise ValidationError('Data not provided.')
+
+class Todo:
+    def __init__(self, name, task):
+        self.name = name
+        self.task = task
 
 class TodoSchema(Schema):
     name = fields.Str(validate=must_not_be_blank)
@@ -27,16 +27,25 @@ todo_schema = TodoSchema()
 
 ### API ###
 
+@app.before_request
+def before_request():
+    g.db = storage.db
+    g.db.connect()
+
+@app.after_request
+def after_request(response):
+    g.db.close()
+    return response
+
 @app.route("/")
 def home():
-  return "Hello, Flask!"
+    return "Hello, Flask!"
 
-@app.route('/todos/<string:todo_id>')
-def get_todo(todo_id):
-    if todo_id not in todos:
-        return jsonify({'message': '{} not found.'.format(todo_id)}), 404
-    todo_result = todo_schema.dump(todos[todo_id])
-    return jsonify(todo_result)
+@app.route('/todos/<string:name>')
+def get_todo(name):
+    todo = storage.Todo.get_by_id(name)
+    result = todo_schema.dump(todo)
+    return jsonify(result)
 
 @app.route('/todos/', methods=['POST'])
 def post_todo():
@@ -48,5 +57,13 @@ def post_todo():
     except ValidationError as err:
         return jsonify(err.messages), 400
     
-    todos[data.name] = data
+    try:
+        storage.Todo.get_by_id(data.name)
+        return jsonify({'errors': 'Task already exists.'}), 400
+    except storage.Todo.DoesNotExist:
+        storage.Todo.create(
+            name = data.name,
+            task = data.task
+        )
+
     return '', 200
