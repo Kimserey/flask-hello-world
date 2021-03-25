@@ -22,7 +22,7 @@ openapi-spec-validator==0.2.4
 peewee==3.8.0
 pylint==2.2.2
 pytz==2018.7
-PyYAML==3.13
+PyYAML==5.4
 requests==2.21.0
 six==1.12.0
 swagger-ui-bundle==0.0.2
