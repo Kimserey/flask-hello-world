@@ -17,7 +17,7 @@ lazy-object-proxy==1.3.1
 MarkupSafe==1.1.0
 marshmallow==3.0.0rc2
 mccabe==0.6.1
-mistune==0.8.4
+mistune==2.0.3
 openapi-spec-validator==0.2.4
 peewee==3.8.0
 pylint==2.2.2
